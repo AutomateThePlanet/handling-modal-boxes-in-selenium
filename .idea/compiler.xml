@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="shadowdom" />
         <module name="handling-stale-element-exceptions-in-selenium-java" />
+        <module name="handling-modal-boxes-in-selenium" />
       </profile>
     </annotationProcessing>
   </component>
