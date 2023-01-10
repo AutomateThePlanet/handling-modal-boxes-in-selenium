@@ -26,12 +26,12 @@ public class ComplexModalDialog {
     }
 
     public void close() {
-        var sendMessageButton = getModalContentBody().findElement(By.xpath("//button[text()='Close']"));
+        var sendMessageButton = getModalContentBody().findElement(By.xpath(".//button[text()='Close']"));
         sendMessageButton.click();
     }
 
     public void sendMessage() {
-        var sendMessageButton = getModalContentBody().findElement(By.xpath("//button[text()='Send message']"));
+        var sendMessageButton = getModalContentBody().findElement(By.xpath(".//button[text()='Send message']"));
         sendMessageButton.click();
     }
 

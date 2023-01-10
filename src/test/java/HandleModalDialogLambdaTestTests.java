@@ -1,23 +1,20 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utilities.Wait;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Set;
+import java.utilities.ComplexModalDialog;
 
 public class HandleModalDialogLambdaTestTests {
     private final int WAIT_FOR_ELEMENT_TIMEOUT = 30;
@@ -54,108 +51,106 @@ public class HandleModalDialogLambdaTestTests {
     }
 
     @Test
-    public void createStaleElementReferenceException() {
-        driver.navigate().to("https://www.lambdatest.com/selenium-playground/");
+    public void verifyModalDialogBox() {
+        driver.get("https://www.lambdatest.com/selenium-playground/bootstrap-modal-demo");
 
-        WebElement pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
-        WebElement filterByField = driver.findElement(By.id("task-table-filter"));
+        var modalButton = driver.findElement(By.xpath("//button[@data-target='#myModal']"));
+        modalButton.click();
 
-        filterByField.sendKeys("in progress");
+        WebElement modalContainer = webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("modal-dialog")));
 
-        driver.navigate().back();
+        WebElement modalContentBody = modalContainer.findElement(By.xpath(".//div[@class='modal-body']"));
+        Assertions.assertEquals(modalContentBody.getText(),
+                "This is the place where the content for the modal dialog displays", "Verify modal body message");
 
-        pageLink.click();
-        filterByField.sendKeys("completed");
+        WebElement modalAcceptButton = modalContainer.findElement(By.xpath(".//button[contains(text(),'Save Changes')]"));
+        modalAcceptButton.click();
     }
 
     @Test
-    public void test1_ReInitializeWebElementToHandle() {
-        driver.navigate().to("https://www.lambdatest.com/selenium-playground/");
+    public void verifyMultipleModalDialogBoxes() {
+        driver.get("https://www.lambdatest.com/selenium-playground/bootstrap-modal-demo");
 
-        WebElement pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
-        WebElement filterByField = driver.findElement(By.id("task-table-filter"));
+        var modalButton = driver.findElement(By.xpath("//div[text()='Multiple Modal Example']/following-sibling::button"));
+        modalButton.click();
 
-        filterByField.sendKeys("in progress");
-        driver.navigate().back();
-        pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
-        filterByField = driver.findElement(By.id("task-table-filter"));
-        filterByField.sendKeys("completed");
+        WebElement modalContainer = webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("myMultiModal")));
+
+        WebElement modalContentBody = modalContainer.findElement(By.xpath(".//div[@class='modal-body']"));
+        Assertions.assertTrue(modalContentBody.getText().contains("Click launch modal button to launch second modal."));
+
+        var secondLaunchButton = modalContentBody.findElement(By.xpath("//button[@data-target='#mySecondModal']"));
+        secondLaunchButton.click();
+
+        WebElement secondModalContainer = webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("mySecondModal")));
+        WebElement secondModalContentBody = secondModalContainer.findElement(By.xpath(".//div[@class='modal-body']"));
+        Assertions.assertTrue(secondModalContentBody.getText().contains("This is the place where the content for the modal dialog displays."));
+
+        WebElement secondModalAcceptButton = secondModalContainer.findElement(By.xpath(".//button[contains(text(),'Save Changes')]"));
+        secondModalAcceptButton.click();
+
+        WebElement modalAcceptButton = modalContainer.findElement(By.xpath(".//button[contains(text(),'Save Changes')]"));
+        modalAcceptButton.click();
     }
 
     @Test
-    public void test2_WhileLoopToHandle_SERE() {
-        driver.navigate().to("https://www.lambdatest.com/selenium-playground/");
+    public void verifyComplexDialogBoxes() {
+        driver.get("https://getbootstrap.com/docs/4.0/components/modal/");
 
-        WebElement pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
-        By filterByField = By.id("task-table-filter");
+        var modalButton = driver.findElement(By.xpath("//button[text()='Open modal for @mdo']"));
+        modalButton.click();
 
-        Wait wait = new Wait(driver);
-        var input = wait.retryWhileLoop(filterByField);
-        input.sendKeys("in progress");
+        var complexDialog = new ComplexModalDialog(driver);
 
-        driver.navigate().back();
-        pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
+        complexDialog.setRecipient("Anton");
+        complexDialog.setMessage("test message");
 
-        input = wait.retryWhileLoop(filterByField);
-        input.sendKeys("completed");
+        complexDialog.sendMessage();
+        complexDialog.close();
     }
 
     @Test
-    public void test3_ForLoopToHandle_SERE() {
-        driver.navigate().to("https://www.lambdatest.com/selenium-playground/");
+    public void verifyAlerts() {
+        driver.get("https://www.lambdatest.com/selenium-playground/javascript-alert-box-demo");
 
-        WebElement pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
-        By filterByField = By.id("task-table-filter");
+        var alertButton = driver.findElement(By.xpath("//div[text()='Java Script Alert Box']/following-sibling::button"));
+        alertButton.click();
 
-        Wait wait = new Wait(driver);
-        var input = wait.retryWhileLoop(filterByField);
-        input.sendKeys("in progress");
+        Assertions.assertEquals("I am an alert box!", driver.switchTo().alert().getText());
 
-        driver.navigate().back();
-        pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
+        driver.switchTo().alert().accept();
 
-        input = wait.retryWhileLoop(filterByField);
-        input.sendKeys("completed");
+        var alertConfirmation = driver.findElement(By.xpath("//div[text()='Java Script Confirm Box']/following-sibling::button"));
+        alertConfirmation.click();
+
+        driver.switchTo().alert().dismiss();
+
+        var alertTextButton = driver.findElements(By.xpath("//div[text()='Java Script Alert Box']/following-sibling::button")).get(1);
+        alertTextButton.click();
+
+        driver.switchTo().alert().sendKeys("LambdaTest");
+
+        var confirmationParagraph = driver.findElement(By.id("prompt-demo"));
+        Assertions.assertEquals("You have entered 'LambdaTest' !", confirmationParagraph.getText());
     }
 
     @Test
-    public void test4_chainExpectedConditionsToHandle() {
-        driver.navigate().to("https://www.lambdatest.com/selenium-playground/");
+    public void verifyPopups() {
+        driver.get("https://www.lambdatest.com/selenium-playground/window-popup-modal-demo");
 
-        WebElement pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
-        By filterByField = By.id("task-table-filter");
+        String mainWindowHandle = driver.getWindowHandle();
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        WebElement followButtonOnMainWindow = driver.findElement(By.xpath("//a[contains(@title,'Twitter')]"));
+        followButtonOnMainWindow.click();
 
-        var filter = wait.until(ExpectedConditions.refreshed(
-                ExpectedConditions.presenceOfElementLocated(filterByField)));
-        filter.sendKeys("in progress");
+        Set<String> windowHandles = driver.getWindowHandles();
+        Assertions.assertEquals(windowHandles.size(), 2);
 
-        driver.navigate().back();
-        pageLink = driver.findElement(By.linkText("Table Data Search"));
-        pageLink.click();
-
-        filter = wait.until(ExpectedConditions.refreshed(
-                ExpectedConditions.presenceOfElementLocated(filterByField)));
-        filter.sendKeys("completed");
-    }
-
-    public void waitForAjax() {
-        JavascriptExecutor javascriptExecutor = (JavascriptExecutor)driver;
-        webDriverWait.until(d -> (Boolean) javascriptExecutor.executeScript("return window.jQuery != undefined && jQuery.active == 0"));
-    }
-
-    public void waitUntilPageLoadsCompletely() {
-        JavascriptExecutor javascriptExecutor = (JavascriptExecutor)driver;
-        webDriverWait.until(d -> javascriptExecutor.executeScript("return document.readyState").toString().equals("complete"));
+        for (var currentWindow : windowHandles){
+            if (!mainWindowHandle.equalsIgnoreCase(currentWindow)) {
+                driver.switchTo().window(currentWindow);
+            }
+        }
     }
 
     @AfterEach

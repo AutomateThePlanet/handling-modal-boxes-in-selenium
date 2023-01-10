@@ -1,31 +1,28 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utilities.Wait;
 
 import java.time.Duration;
-import java.util.Iterator;
 import java.util.Set;
 import java.utilities.ComplexModalDialog;
 
 public class HandleModalDialogTests {
     private final int WAIT_FOR_ELEMENT_TIMEOUT = 30;
-    private ChromeDriver driver;
+    private FirefoxDriver driver;
     private WebDriverWait webDriverWait;
 
     @BeforeAll
     public static void setUpClass() {
-        WebDriverManager.chromedriver().setup();
+        WebDriverManager.firefoxdriver().setup();
     }
 
     @BeforeEach
     public void setUp() {
-        driver = new ChromeDriver();
+        driver = new FirefoxDriver();
         driver.manage().window().maximize();
         webDriverWait = new WebDriverWait(driver, Duration.ofSeconds(WAIT_FOR_ELEMENT_TIMEOUT));
     }
@@ -40,8 +37,7 @@ public class HandleModalDialogTests {
         WebElement modalContainer = webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("modal-dialog")));
 
         WebElement modalContentBody = modalContainer.findElement(By.xpath(".//div[@class='modal-body']"));
-        Assertions.assertEquals(modalContentBody.getText(),
-                "This is the place where the content for the modal dialog displays", "Verify modal body message");
+        Assertions.assertEquals("This is the place where the content for the modal dialog displays", modalContentBody.getText());
 
         WebElement modalAcceptButton = modalContainer.findElement(By.xpath(".//button[contains(text(),'Save Changes')]"));
         modalAcceptButton.click();
@@ -51,6 +47,7 @@ public class HandleModalDialogTests {
     public void verifyMultipleModalDialogBoxes() {
         driver.get("https://www.lambdatest.com/selenium-playground/bootstrap-modal-demo");
 
+        // //button[@data-target='#myMultiModal']
         var modalButton = driver.findElement(By.xpath("//div[text()='Multiple Modal Example']/following-sibling::button"));
         modalButton.click();
 
@@ -86,24 +83,32 @@ public class HandleModalDialogTests {
         complexDialog.setMessage("test message");
 
         complexDialog.sendMessage();
-        complexDialog.close();
+        //complexDialog.close();
     }
 
     @Test
     public void verifyAlerts() {
         driver.get("https://www.lambdatest.com/selenium-playground/javascript-alert-box-demo");
 
-        var openAlertButton = driver.findElement(By.xpath("(//button[contains(text(),'Click Me')])[3]"));
-        openAlertButton.click();
+        var alertButton = driver.findElement(By.xpath("//div[text()='Java Script Alert Box']/following-sibling::button"));
+        alertButton.click();
 
-        webDriverWait.until(ExpectedConditions.alertIsPresent());
+        Assertions.assertEquals("I am an alert box!", driver.switchTo().alert().getText());
 
-        String alertBodyText = driver.switchTo().alert().getText();
-        Assertions.assertEquals(alertBodyText, "Please enter your name", "Verify alert body content");
+        driver.switchTo().alert().accept();
+
+        var alertConfirmation = driver.findElement(By.xpath("//div[text()='Java Script Confirm Box']/following-sibling::button"));
+        alertConfirmation.click();
+
+        driver.switchTo().alert().dismiss();
+
+        var alertTextButton = driver.findElements(By.xpath("//div[text()='Java Script Alert Box']/following-sibling::button")).get(1);
+        alertTextButton.click();
 
         driver.switchTo().alert().sendKeys("LambdaTest");
 
-        driver.switchTo().alert().accept();
+        var confirmationParagraph = driver.findElement(By.id("prompt-demo"));
+        Assertions.assertEquals("You have entered 'LambdaTest' !", confirmationParagraph.getText());
     }
 
     @Test
@@ -123,6 +128,8 @@ public class HandleModalDialogTests {
                 driver.switchTo().window(currentWindow);
             }
         }
+
+        driver.switchTo().defaultContent();
     }
 
     @AfterEach
